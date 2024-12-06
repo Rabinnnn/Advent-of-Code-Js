@@ -6,34 +6,25 @@ fs.readFile('data.txt', 'utf8', (err, data) => {
         return;
     }
 
-    const regex = /mul\((\d{1,3}),(\d{1,3})\)|don?'t?\(\s?\)/g;
-    const regexMul = /mul\((\d{1,3}),(\d{1,3})\)/;  // Pattern to match mul(X, Y)
-    const regexDo = /do\(\)/;  // Pattern to match do()
-    const regexDont = /don't\(\)/;  // Pattern to match don't()
-
+    const regex = /mul\((\d{1,3}),(\d{1,3})\)|do\(\)|don't\(\)/g;
     let sum = 0;
-    let flag = true;  // Initially, mul instructions are enabled
+    let flag = true; // At the start, `mul` instructions are enabled.
 
-    // Use matchAll to find all matches in the whole string
+    // Use matchAll to find all valid matches
     const matches = data.matchAll(regex);
 
     for (const match of matches) {
-        // match[0] contains the entire matched string
-        if (regexDo.test(match[0])) {
-            flag = true;  // Enable future mul(X, Y) instructions
-        } else if (regexDont.test(match[0])) {
-            flag = false;  // Disable future mul(X, Y) instructions
-        } else if (regexMul.test(match[0]) && flag) {
-            // Process mul(X, Y) if flag is true (enabled)
-            const matchResult = match[0].match(regexMul);
-            if (matchResult) {
-                const x = matchResult[1];  // Captured first number (X)
-                const y = matchResult[2];  // Captured second number (Y)
-                const product = parseInt(x) * parseInt(y);  // Compute the product
-                sum += product;
-            }
+        if (match[0] === 'do()') {
+            flag = true; // Enable mul processing
+        } else if (match[0] === "don't()") {
+            flag = false; // Disable mul processing
+        } else if (match[0].startsWith('mul') && flag) {
+            // Extract numbers X and Y from mul(X, Y)
+            const x = parseInt(match[1]);
+            const y = parseInt(match[2]);
+            sum += x * y; // Compute and add the product
         }
     }
 
-    console.log("Sum of products:", sum);
+    console.log("Sum of enabled multiplications:", sum);
 });
